@@ -1,0 +1,11 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@500&display=swap');
+
+* {
+    font-family: Inter;
+}
+
+body {
+    min-height: 100vw;
+    background-color: #000000;
+    color: #ffffff;
+}

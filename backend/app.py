@@ -1,26 +1,28 @@
 import secrets
 
-from flask import Flask
-from flask import request
+from flask import Flask, request
+from flask_cors import CORS
 
 
 def generate_session() -> str:
 	return secrets.token_urlsafe(32)
 
 
-app = Flask(__name__)
+app: Flask = Flask(__name__)
+cors = CORS(app, resources={r"*": {"origins": "*"}})
+
+data: list = []
 
 
-@app.route("/", methods=["GET"])
-def home() -> str:
-	return generate_session()
+@app.route("/get")
+def get():
+	return {"response": str(data)}
 
 
-@app.route("/access")
-def access():
-	token = request.args.get('token')
-	
-	return f'token: {token} take it or leave it'
+@app.route("/post")
+def post():
+	data.append(request.args.get('body'))
+	return {"response": "success"}
 
 
 if __name__ == "__main__":
