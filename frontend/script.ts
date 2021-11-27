@@ -1,6 +1,6 @@
 const root = 'http://127.0.0.1:5000';
 $('#action_post').on('click', async () => {
-	post($('#input_post').val().toString());
+	post($('#input_post').val()?.toString());
 	get();
 });
 
@@ -9,26 +9,35 @@ $('#action_get').on('click', async () => {
 });
 
 function get (): void{
-	fetch(root + '/get')
+	fetch(`${root}/get`)
 		.then(res => res.json())
-		.then(res =>
-			$('#output').replaceWith(generateListElementFromArray(res.response)),
-		);
+		.then(res => res.response)
+		.then(res => {
+			$('#output').replaceWith(generateListElementFromArray(res));
+			console.log(res);
+		});
 }
 
-function post (body: string): void{
-	fetch(root + '/post?body=' + encodeURIComponent(body))
+function post (body: string|undefined): void{
+	if (!body) return;
+	fetch(`${root}/post?body=${encodeURIComponent(body)}`)
 		.then(res => res.json())
 		.then(res => $('#output').html(res.response));
 }
 
 function generateListElementFromArray (array: string[]): JQuery<HTMLElement>{
-	console.log(array);
+	console.log(typeof array);
+	array = array.join("").split(",");
+	
 	let list = $('<ul>');
-	array.forEach((elt: string) =>
+	list.attr("id", "output");
+
+	for (const elt of array) {
+		console.log(elt);
 		$('<div>', {
 			text: elt,
-		}).appendTo(list),
-	);
+		}).appendTo(list);
+	}
+
 	return list;
 }

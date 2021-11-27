@@ -1,3 +1,4 @@
+"use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
     return new (P || (P = Promise))(function (resolve, reject) {
@@ -34,40 +35,48 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
-var _this = this;
 var root = 'http://127.0.0.1:5000';
-$('#action_post').on('click', function () { return __awaiter(_this, void 0, void 0, function () {
-    return __generator(this, function (_a) {
-        post($('#input_post').val().toString());
+$('#action_post').on('click', function () { return __awaiter(void 0, void 0, void 0, function () {
+    var _a;
+    return __generator(this, function (_b) {
+        post((_a = $('#input_post').val()) === null || _a === void 0 ? void 0 : _a.toString());
         get();
         return [2 /*return*/];
     });
 }); });
-$('#action_get').on('click', function () { return __awaiter(_this, void 0, void 0, function () {
+$('#action_get').on('click', function () { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
         get();
         return [2 /*return*/];
     });
 }); });
 function get() {
-    fetch(root + '/get')
+    fetch("".concat(root, "/get"))
         .then(function (res) { return res.json(); })
+        .then(function (res) { return res.response; })
         .then(function (res) {
-        return $('#output').replaceWith(generateListElementFromArray(res.response));
+        $('#output').replaceWith(generateListElementFromArray(res));
+        console.log(res);
     });
 }
 function post(body) {
-    fetch(root + '/post?body=' + encodeURIComponent(body))
+    if (!body)
+        return;
+    fetch("".concat(root, "/post?body=").concat(encodeURIComponent(body)))
         .then(function (res) { return res.json(); })
         .then(function (res) { return $('#output').html(res.response); });
 }
 function generateListElementFromArray(array) {
-    console.log(array);
+    console.log(typeof array);
+    array = array.join("").split(",");
     var list = $('<ul>');
-    array.forEach(function (elt) {
-        return $('<div>', {
+    list.attr("id", "output");
+    for (var _i = 0, array_1 = array; _i < array_1.length; _i++) {
+        var elt = array_1[_i];
+        console.log(elt);
+        $('<div>', {
             text: elt
         }).appendTo(list);
-    });
+    }
     return list;
 }
