@@ -40,43 +40,40 @@ $('#action_post').on('click', function () { return __awaiter(void 0, void 0, voi
     var _a;
     return __generator(this, function (_b) {
         post((_a = $('#input_post').val()) === null || _a === void 0 ? void 0 : _a.toString());
-        get();
+        get(updateOutput);
         return [2 /*return*/];
     });
 }); });
 $('#action_get').on('click', function () { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
-        get();
+        get(updateOutput);
         return [2 /*return*/];
     });
 }); });
-function get() {
+function updateOutput(data) {
+    $('#output').replaceWith(generateListElementFromArray(data));
+}
+function get(onSuccess) {
     fetch("".concat(root, "/get"))
         .then(function (res) { return res.json(); })
         .then(function (res) { return res.response; })
-        .then(function (res) {
-        $('#output').replaceWith(generateListElementFromArray(res));
-        console.log(res);
-    });
+        .then(onSuccess);
 }
-function post(body) {
+function post(body, onSuccess) {
     if (!body)
         return;
     fetch("".concat(root, "/post?body=").concat(encodeURIComponent(body)))
-        .then(function (res) { return res.json(); })
-        .then(function (res) { return $('#output').html(res.response); });
+        .then(function (res) { return res.status; })
+        .then(onSuccess);
 }
 function generateListElementFromArray(array) {
-    console.log(typeof array);
-    array = array.join("").split(",");
     var list = $('<ul>');
     list.attr("id", "output");
     for (var _i = 0, array_1 = array; _i < array_1.length; _i++) {
         var elt = array_1[_i];
-        console.log(elt);
-        $('<div>', {
+        $('<li>', {
             text: elt
-        }).appendTo(list);
+        }).appendTo(list).fadeIn();
     }
     return list;
 }

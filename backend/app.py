@@ -16,13 +16,13 @@ data: list = []
 
 @app.route("/get")
 def get():
-    return {"response": data}
+    return {"response": data or ["[empty]"]}, 200
 
 
 @app.route("/post")
 def post():
     data.append(request.args.get('body'))
-    return {"response": "success"}
+    return '', 201
 
 
 if __name__ == "__main__":

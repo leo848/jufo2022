@@ -1,11 +1,31 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@500&display=swap');
 
 * {
-    font-family: Inter;
+	font-family: Inter;
 }
 
 body {
-    min-height: 100vw;
-    background-color: #000000;
-    color: #ffffff;
+	min-height: 100vw;
+	background-color: #000000;
+	color: #ffffff;
+}
+
+#output li {
+	height: 2rem;
+	width: 20rem;
+	margin: .5rem;
+	color: #fefefe;
+	background-color: #202020;
+	list-style-type: none;
+	text-align: center;
+	vertical-align: middle;
+	line-height: 2rem;
+	border-radius: 1rem;
+	border: 2px solid;
+	border-color: #202020;
+	transition-duration: .2s;
+}
+
+#output li:hover {
+	border-color: #fefefe;
 }
