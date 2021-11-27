@@ -50,6 +50,13 @@ $('#action_get').on('click', function () { return __awaiter(void 0, void 0, void
         return [2 /*return*/];
     });
 }); });
+$('#action_login').on('click', function () { return __awaiter(void 0, void 0, void 0, function () {
+    var _a, _b;
+    return __generator(this, function (_c) {
+        login((_a = prompt("Enter username")) !== null && _a !== void 0 ? _a : "", (_b = prompt("Enter password")) !== null && _b !== void 0 ? _b : "", alert);
+        return [2 /*return*/];
+    });
+}); });
 function updateOutput(data) {
     $('#output').replaceWith(generateListElementFromArray(data));
 }
@@ -65,6 +72,21 @@ function post(body, onSuccess) {
     fetch("".concat(root, "/post?body=").concat(encodeURIComponent(body)))
         .then(function (res) { return res.status; })
         .then(onSuccess);
+}
+function login(username, password, onSuccess) {
+    if (onSuccess === void 0) { onSuccess = function (_) { }; }
+    fetch("".concat(root, "/login"), {
+        headers: { 'Content-Type': 'application/json' },
+        method: 'POST',
+        body: JSON.stringify({
+            username: username,
+            password: password
+        })
+    })
+        .then(function (res) { return res.json(); })
+        .then(function (res) { return res.response; })
+        .then(function (res) { if (onSuccess)
+        onSuccess(res); });
 }
 function generateListElementFromArray(array) {
     var list = $('<ul>');
