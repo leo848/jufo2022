@@ -36,24 +36,50 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
     }
 };
 var root = 'http://127.0.0.1:5000';
+var sessionID;
 $('#action_post').on('click', function () { return __awaiter(void 0, void 0, void 0, function () {
     var _a;
     return __generator(this, function (_b) {
-        post((_a = $('#input_post').val()) === null || _a === void 0 ? void 0 : _a.toString());
-        get(updateOutput);
+        if (!sessionID)
+            return [2];
+        post((_a = $('#input_post').val()) === null || _a === void 0 ? void 0 : _a.toString()).then(function () {
+            get(updateOutput);
+        });
         return [2];
     });
 }); });
 $('#action_get').on('click', function () { return __awaiter(void 0, void 0, void 0, function () {
     return __generator(this, function (_a) {
+        if (!sessionID)
+            return [2];
         get(updateOutput);
         return [2];
     });
 }); });
 $('#action_login').on('click', function () { return __awaiter(void 0, void 0, void 0, function () {
+    var username, password;
     var _a, _b;
     return __generator(this, function (_c) {
-        login((_a = prompt("Enter username")) !== null && _a !== void 0 ? _a : "", (_b = prompt("Enter password")) !== null && _b !== void 0 ? _b : "", alert);
+        username = (_a = prompt("Enter username")) !== null && _a !== void 0 ? _a : "";
+        password = (_b = prompt("Enter password")) !== null && _b !== void 0 ? _b : "";
+        login(username, password, function (res) {
+            sessionID = res.sid;
+            $('#session_id').replaceWith($('<div>', {
+                text: "".concat(res.username, ":   ").concat(res.sid),
+                id: "session_id"
+            }));
+            get(updateOutput);
+        });
+        return [2];
+    });
+}); });
+$('#action_logout').on('click', function () { return __awaiter(void 0, void 0, void 0, function () {
+    return __generator(this, function (_a) {
+        logout(sessionID);
+        $('#session_id').replaceWith($('<div>', {
+            text: "Logged out: {sid}",
+            id: "session_id"
+        }));
         return [2];
     });
 }); });
@@ -68,15 +94,15 @@ function updateOutput(data) {
     $('#output').replaceWith(generateListElementFromArray(data));
 }
 function get(onSuccess) {
-    fetch("".concat(root, "/get"))
+    fetch("".concat(root, "/get?sid=").concat(sessionID))
         .then(function (res) { return res.json(); })
         .then(function (res) { return res.response; })
         .then(onSuccess);
 }
 function post(body, onSuccess) {
     if (!body)
-        return;
-    fetch("".concat(root, "/post?body=").concat(encodeURIComponent(body)))
+        return emptyPromise();
+    return fetch("".concat(root, "/post?body=").concat(encodeURIComponent(body)))
         .then(function (res) { return res.status; })
         .then(onSuccess);
 }
@@ -94,6 +120,13 @@ function login(username, password, onSuccess) {
         .then(function (res) { return res.response; })
         .then(onSuccess);
 }
+function logout(sessionID) {
+    fetch("".concat(root, "/logout"), {
+        headers: { 'Content-Type': 'application/json' },
+        method: 'POST',
+        body: JSON.stringify({ sid: sessionID })
+    });
+}
 function register(username, password, onSuccess) {
     if (onSuccess === void 0) { onSuccess = function () { }; }
     fetch("".concat(root, "/register"), {
@@ -104,7 +137,7 @@ function register(username, password, onSuccess) {
             password: password
         })
     })
-        .then(function (res) { return res.json(); })
+        .then(function (res) { return res.json(); }, alert)
         .then(function (res) { return res.response; })
         .then(onSuccess);
 }
@@ -118,4 +151,7 @@ function generateListElementFromArray(array) {
         }).appendTo(list).fadeIn();
     }
     return list;
+}
+function emptyPromise() {
+    return Promise.resolve();
 }

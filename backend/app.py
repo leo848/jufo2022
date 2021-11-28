@@ -1,53 +1,44 @@
 import hashlib
-import json
 import secrets
 from typing import Tuple, Dict
 
 from flask import Flask, request
 from flask_cors import CORS
 
-USERS_FILE = "users.json"
+from backend.datatools import *
+
+DATA_FILE = "data.json"
 
 
 def generate_session() -> str:
     return secrets.token_urlsafe(32)
 
 
-def save_users(users):
-    with open(USERS_FILE, 'w') as f:
-        json.dump(users, f, indent=4)
-
-
-def load_users() -> dict:
-    with open(USERS_FILE, "r") as f:
-        return json.load(f)
-
-
-def add_new_user(users: dict, new_user: str, user_hash: str):
-    users[new_user] = user_hash
-    save_users(users)
+def get_ip() -> str:
+    return request.remote_addr
 
 
 def to_response(content, status_code: int = 200) -> Tuple[Dict[str, str], int]:
     return {"response": content}, status_code
 
 
-users = load_users()
+users = load_data("users.json")
+sessions = {}
 
 app: Flask = Flask(__name__)
 cors = CORS(app, resources={r"*": {"origins": "*"}})
 
-data: list = []
-
 
 @app.route("/get")
 def get():
-    return to_response(data or ["[empty]"])
+    username = sessions[get_ip()]["username"]
+    return to_response(get_user_data(username) or ["[empty]"])
 
 
 @app.route("/post")
 def post():
-    data.append(request.args.get('body'))
+    username = sessions[get_ip()]["username"]
+    add_user_data(username, request.args.get("body"))
     return '', 201
 
 
@@ -58,11 +49,30 @@ def login():
         .sha256(request.json["password"].encode()) \
         .hexdigest()
     print(username, password_hash)
+
+    users = load_data("users.json")
     if username not in users.keys():
-        return to_response(f'The user {username} doesn\'t exist (yet)', 404)
+        return to_response(f"The user {username} doesn't exist (yet)", 404)
     if not users.get(username) == password_hash:
-        return to_response(f'Wrong password', 401)
-    return to_response(f'Successfully logged in as {username}')
+        return to_response(f'Wrong password for user {username}', 401)
+
+    sid = generate_session()
+    ip = get_ip()
+    sessions[ip] = {"username": username, "sid": sid}
+    return to_response({"sid": sid, "username": username})
+
+
+@app.route("/logout", methods=["POST"])
+def logout():
+    sid = request.json.get("sid", "")
+    ip = get_ip()
+    if ip not in sessions.keys():
+        return to_response("You are not logged in", 401)
+    if not sessions[ip]["sid"] == sid:
+        return to_response("Your session id isn't equal to the one affiliated to your IP", 401)
+
+    del sessions[ip]
+    return to_response("You have successfully logged out")
 
 
 @app.route("/register", methods=["POST"])
@@ -77,7 +87,10 @@ def register():
         return to_response(f'Too long, maximum length is 15', 403)
     if username in users.keys():
         return to_response(f'The user {username} already exists.', 401)
-    add_new_user(users, username, password_hash)
+    add_new_user(username, password_hash)
+    data = load_data(DATA_FILE)
+    data[username] = []
+    save_data(data, DATA_FILE)
     return to_response(f'Successfully created user {username}!')
 
 

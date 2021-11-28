@@ -1,19 +1,53 @@
+interface LoginCredentials {
+	username: string,
+	password: string;
+}
+
+interface RequestedCredentials {
+	username: string,
+	sid: string;
+}
+
 const root = 'http://127.0.0.1:5000';
+let sessionID: string;
 
 $('#action_post').on('click', async () => {
-	post($('#input_post').val()?.toString());
-	get(updateOutput);
+	if (!sessionID) return;
+	post($('#input_post').val()?.toString()).then(() => {
+		get(updateOutput);
+	});
 });
 
 $('#action_get').on('click', async () => {
+	if (!sessionID) return;
 	get(updateOutput);
 });
 
-$('#action_login').on('click', async () => {
-	login(prompt("Enter username") ?? "", prompt("Enter password") ?? "", alert);
+$('#action_login').on('click', async (): Promise<void> => {
+	let username: string = prompt("Enter username") ?? "";
+	let password: string = prompt("Enter password") ?? "";
+	login(
+		username, password,
+		res => {
+			sessionID = res.sid;
+			$('#session_id').replaceWith($('<div>', {
+				text: `${res.username}:   ${res.sid}`,
+				id: "session_id"
+			}));
+			get(updateOutput);
+		}
+	);
 });
 
-$('#action_register').on('click', async () => {
+$('#action_logout').on('click', async (): Promise<void> => {
+	logout(sessionID);
+	$('#session_id').replaceWith($('<div>', {
+		text: `Logged out: {sid}`,
+		id: "session_id"
+	}));
+});
+
+$('#action_register').on('click', async (): Promise<void> => {
 	register(prompt("Enter new username") ?? "", prompt("Enter new password") ?? "", alert);
 });
 
@@ -22,7 +56,7 @@ function updateOutput(data: string[]): void {
 }
 
 function get(onSuccess: (data: string[]) => void): void {
-	fetch(`${root}/get`)
+	fetch(`${root}/get?sid=${sessionID}`)
 		.then(res => res.json())
 		.then(res => res.response)
 		.then(onSuccess);
@@ -30,11 +64,11 @@ function get(onSuccess: (data: string[]) => void): void {
 
 
 function post(
-	body: string | undefined,
+	body?: string,
 	onSuccess?: (status: number) => void
-): void {
-	if (!body) return;
-	fetch(`${root}/post?body=${encodeURIComponent(body)}`)
+): Promise<void> {
+	if (!body) return emptyPromise();
+	return fetch(`${root}/post?body=${encodeURIComponent(body)}`)
 		.then(res => res.status)
 		.then(onSuccess);
 }
@@ -42,7 +76,7 @@ function post(
 function login(
 	username: string,
 	password: string,
-	onSuccess: (status: number) => void = () => { }
+	onSuccess: (req: RequestedCredentials) => void = () => { }
 ): void {
 	fetch(`${root}/login`, {
 		headers: { 'Content-Type': 'application/json' },
@@ -58,6 +92,16 @@ function login(
 
 }
 
+function logout(sessionID: string) {
+	fetch(`${root}/logout`, {
+		headers: { 'Content-Type': 'application/json' },
+		method: 'POST',
+		body: JSON.stringify({ sid: sessionID })
+	});
+}
+
+
+
 function register(
 	username: string,
 	password: string,
@@ -71,7 +115,7 @@ function register(
 			password: password
 		})
 	})
-		.then(res => res.json())
+		.then(res => res.json(), alert)
 		.then(res => res.response)
 		.then(onSuccess);
 
@@ -88,4 +132,8 @@ function generateListElementFromArray(array: string[]): JQuery<HTMLUListElement>
 	}
 
 	return list;
+}
+
+function emptyPromise(): Promise<void> {
+	return Promise.resolve();
 }
