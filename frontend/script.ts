@@ -21,7 +21,7 @@ function updateOutput(data: string[]): void {
 	$('#output').replaceWith(generateListElementFromArray(data));
 }
 
-function get(onSuccess: (data: string[]) => any): void {
+function get(onSuccess: (data: string[]) => void): void {
 	fetch(`${root}/get`)
 		.then(res => res.json())
 		.then(res => res.response)
@@ -29,16 +29,21 @@ function get(onSuccess: (data: string[]) => any): void {
 }
 
 
-function post(body: string | undefined, onSuccess?: (status: number) => any): void {
+function post(
+	body: string | undefined,
+	onSuccess?: (status: number) => void
+): void {
 	if (!body) return;
 	fetch(`${root}/post?body=${encodeURIComponent(body)}`)
 		.then(res => res.status)
 		.then(onSuccess);
 }
 
-function login(username: string,
+function login(
+	username: string,
 	password: string,
-	onSuccess: (status: number) => any = (_) => { }): void {
+	onSuccess: (status: number) => void = () => { }
+): void {
 	fetch(`${root}/login`, {
 		headers: { 'Content-Type': 'application/json' },
 		method: 'POST',
@@ -49,13 +54,15 @@ function login(username: string,
 	})
 		.then(res => res.json())
 		.then(res => res.response)
-		.then(res => { if (onSuccess) onSuccess(res); });
+		.then(onSuccess);
 
 }
 
-function register(username: string,
+function register(
+	username: string,
 	password: string,
-	onSuccess: (status: number) => any = (_) => { }): void {
+	onSuccess: (status: number) => void = () => { }
+): void {
 	fetch(`${root}/register`, {
 		headers: { 'Content-Type': 'application/json' },
 		method: 'POST',
@@ -66,12 +73,12 @@ function register(username: string,
 	})
 		.then(res => res.json())
 		.then(res => res.response)
-		.then(res => { if (onSuccess) onSuccess(res); });
+		.then(onSuccess);
 
 }
 
-function generateListElementFromArray(array: string[]): JQuery<HTMLElement> {
-	let list = $('<ul>');
+function generateListElementFromArray(array: string[]): JQuery<HTMLUListElement> {
+	let list = $('<ul>') as JQuery<HTMLUListElement>;
 	list.attr("id", "output");
 
 	for (const elt of array) {
