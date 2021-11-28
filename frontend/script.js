@@ -57,6 +57,13 @@ $('#action_login').on('click', function () { return __awaiter(void 0, void 0, vo
         return [2 /*return*/];
     });
 }); });
+$('#action_register').on('click', function () { return __awaiter(void 0, void 0, void 0, function () {
+    var _a, _b;
+    return __generator(this, function (_c) {
+        register((_a = prompt("Enter new username")) !== null && _a !== void 0 ? _a : "", (_b = prompt("Enter new password")) !== null && _b !== void 0 ? _b : "", alert);
+        return [2 /*return*/];
+    });
+}); });
 function updateOutput(data) {
     $('#output').replaceWith(generateListElementFromArray(data));
 }
@@ -76,6 +83,21 @@ function post(body, onSuccess) {
 function login(username, password, onSuccess) {
     if (onSuccess === void 0) { onSuccess = function (_) { }; }
     fetch("".concat(root, "/login"), {
+        headers: { 'Content-Type': 'application/json' },
+        method: 'POST',
+        body: JSON.stringify({
+            username: username,
+            password: password
+        })
+    })
+        .then(function (res) { return res.json(); })
+        .then(function (res) { return res.response; })
+        .then(function (res) { if (onSuccess)
+        onSuccess(res); });
+}
+function register(username, password, onSuccess) {
+    if (onSuccess === void 0) { onSuccess = function (_) { }; }
+    fetch("".concat(root, "/register"), {
         headers: { 'Content-Type': 'application/json' },
         method: 'POST',
         body: JSON.stringify({

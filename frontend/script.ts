@@ -13,6 +13,10 @@ $('#action_login').on('click', async () => {
 	login(prompt("Enter username") ?? "", prompt("Enter password") ?? "", alert);
 });
 
+$('#action_register').on('click', async () => {
+	register(prompt("Enter new username") ?? "", prompt("Enter new password") ?? "", alert);
+});
+
 function updateOutput(data: string[]): void {
 	$('#output').replaceWith(generateListElementFromArray(data));
 }
@@ -36,6 +40,23 @@ function login(username: string,
 	password: string,
 	onSuccess: (status: number) => any = (_) => { }): void {
 	fetch(`${root}/login`, {
+		headers: { 'Content-Type': 'application/json' },
+		method: 'POST',
+		body: JSON.stringify({
+			username: username,
+			password: password
+		})
+	})
+		.then(res => res.json())
+		.then(res => res.response)
+		.then(res => { if (onSuccess) onSuccess(res); });
+
+}
+
+function register(username: string,
+	password: string,
+	onSuccess: (status: number) => any = (_) => { }): void {
+	fetch(`${root}/register`, {
 		headers: { 'Content-Type': 'application/json' },
 		method: 'POST',
 		body: JSON.stringify({
